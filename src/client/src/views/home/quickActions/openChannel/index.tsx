@@ -30,13 +30,42 @@ import { ColorButton } from '../../../../components/buttons/colorButton/ColorBut
 import { BaseNode } from '../../../../graphql/types';
 import { OpenChannelCard } from './OpenChannel';
 import { OpenRecommended } from './OpenRecommended';
+import { Network } from '../../../../api/types';
+import { useGatewayState } from '../../../../context/GatewayContext';
 
-const IconStyle = styled.div`
+const signetNodes = [
+  {
+    name: '025698cc9ac623f5d1ba',
+    public_key:
+      '025698cc9ac623f5d1baf56310f2f1b62dfffee43ffcdb2c20ccb541f70497d540',
+    socket: '54.158.203.78',
+    connectionString:
+      '025698cc9ac623f5d1baf56310f2f1b62dfffee43ffcdb2c20ccb541f70497d540@54.158.203.78:9739',
+  },
+  {
+    name: 'mutiny-net-lnd',
+    public_key:
+      '02465ed5be53d04fde66c9418ff14a5f2267723810176c9212b722e542dc1afb1b',
+    socket: '45.79.52.207',
+    connectionString:
+      '02465ed5be53d04fde66c9418ff14a5f2267723810176c9212b722e542dc1afb1b@45.79.52.207:9735',
+  },
+  {
+    name: 'GREENFELONY',
+    public_key:
+      '0366abc8eb4da61e31a8d2c4520d31cabdf58cc5250f855657397f3dd62493938a',
+    socket: '45.33.17.66',
+    connectionString:
+      '0366abc8eb4da61e31a8d2c4520d31cabdf58cc5250f855657397f3dd62493938a@45.33.17.66:39735',
+  },
+];
+
+export const IconStyle = styled.div`
   margin-bottom: 8px;
   color: ${themeColors.blue2};
 `;
 
-const Item = styled.div`
+export const Item = styled.div`
   font-size: 14px;
   display: flex;
   flex-direction: column;
@@ -50,6 +79,9 @@ const Item = styled.div`
   cursor: pointer;
   background: ${backgroundColor};
   will-change: transform, opacity;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   :hover {
     background: ${themeColors.blue2};
@@ -67,7 +99,7 @@ const Item = styled.div`
   }
 `;
 
-const Container = styled.div`
+export const Container = styled.div`
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -83,11 +115,13 @@ export const OpenChannel = ({ setOpenCard }: OpenChannelProps) => {
   const [partner, setPartner] = React.useState<BaseNode | null>(null);
   const [open, set] = React.useState(false);
   const { data, loading } = useGetBaseNodesQuery();
+  const { gatewayInfo } = useGatewayState();
 
   React.useEffect(() => {
     if (!loading && data && data.getBaseNodes) {
       if (data.getBaseNodes.length > 0) {
         set(true);
+        console.log(data.getBaseNodes);
       }
     }
   }, [loading, data]);
@@ -135,12 +169,21 @@ export const OpenChannel = ({ setOpenCard }: OpenChannelProps) => {
       return (
         <>
           <Container>
-            {(data?.getBaseNodes || []).map(
+            {(gatewayInfo?.network === Network.Signet || Network.Regtest
+              ? signetNodes
+              : data?.getBaseNodes || []
+            ).map(
               (item, index) =>
                 item && (
                   <Item
                     key={`${index}-${item.name}`}
-                    onClick={() => setPartner(item)}
+                    onClick={() =>
+                      setPartner({
+                        name: item.name,
+                        public_key: item.public_key,
+                        socket: item.socket,
+                      })
+                    }
                   >
                     <IconStyle>{getIcon(item?.name || '')}</IconStyle>
                     {item.name}

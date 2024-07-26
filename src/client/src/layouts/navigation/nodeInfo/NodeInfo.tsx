@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Anchor, Circle } from 'react-feather';
+import { Zap, Link, Circle, Sun } from 'react-feather';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import styled from 'styled-components';
 import { getPrice, Price } from '../../../components/price/Price';
@@ -16,6 +16,7 @@ import {
 } from '../../../components/generic/Styled';
 import { useConfigState } from '../../../context/ConfigContext';
 import { usePriceState } from '../../../context/PriceContext';
+import { useGatewayEcashTotalSats } from '../../../hooks/UseGatewayEcashTotal';
 
 const Closed = styled.div`
   display: flex;
@@ -45,8 +46,9 @@ const Info = styled.div<{ bottomColor: string }>`
 
 const Balance = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
   margin: 2px 0;
   padding: 0 5px;
   cursor: default;
@@ -78,6 +80,7 @@ export const NodeInfo = ({ isOpen, isBurger }: NodeInfoProps) => {
   } = useNodeInfo();
 
   const { onchain, lightning } = useNodeBalances();
+  const totalFedimintEcash = useGatewayEcashTotalSats();
 
   const { currency, displayValues } = useConfigState();
   const priceContext = usePriceState();
@@ -118,15 +121,16 @@ export const NodeInfo = ({ isOpen, isBurger }: NodeInfoProps) => {
             size={18}
             color={channelPending === 0 ? '#FFD300' : '#652EC7'}
             fill={channelPending === 0 ? '#FFD300' : '#652EC7'}
-          />
+          />{' '}
           <Price amount={totalLightning} />
         </SingleLine>
         <SingleLine>
-          <Anchor
-            size={18}
-            color={chainPending === 0 ? '#FFD300' : '#652EC7'}
-          />
+          <Link size={18} color={chainPending === 0 ? '#FFD300' : '#652EC7'} />
           <Price amount={totalChain} />
+        </SingleLine>
+        <SingleLine>
+          <Sun size={18} color={'#FFD300'} />
+          <Price amount={totalFedimintEcash} />
         </SingleLine>
       </>
     );
@@ -154,7 +158,7 @@ export const NodeInfo = ({ isOpen, isBurger }: NodeInfoProps) => {
                 color={channelPending === 0 ? '#FFD300' : '#652EC7'}
               />
             </Margin>
-            <Anchor
+            <Link
               size={18}
               color={chainPending === 0 ? '#FFD300' : '#652EC7'}
             />
@@ -179,6 +183,9 @@ export const NodeInfo = ({ isOpen, isBurger }: NodeInfoProps) => {
           {renderLine('Closed Channels', closedChannelCount)}
           {renderLine('Peers', peersCount)}
         </ReactTooltip>
+        <ReactTooltip id={'full_fedimint_tip'} place={'right'}>
+          {renderLine('Fedimint Balance', totalFedimintEcash)}
+        </ReactTooltip>
       </>
     );
   }
@@ -196,8 +203,12 @@ export const NodeInfo = ({ isOpen, isBurger }: NodeInfoProps) => {
         <Price amount={totalLightning} />
       </Balance>
       <Balance data-tip data-for="chain_balance_tip">
-        <Anchor size={18} color={chainPending === 0 ? '#FFD300' : '#652EC7'} />
+        <Link size={18} color={chainPending === 0 ? '#FFD300' : '#652EC7'} />
         <Price amount={totalChain} />
+      </Balance>
+      <Balance data-tip data-for="full_fedimint_tip">
+        <Sun size={18} color={'#FFD300'} />
+        <Price amount={totalFedimintEcash} />
       </Balance>
       <Balance
         data-tip
